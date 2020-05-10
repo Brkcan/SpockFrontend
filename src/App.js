@@ -1,26 +1,63 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Route, Redirect,Switch } from "react-router-dom";
+import HomeScreen from './screen/HomeScreen';
+import Context from './screen/Context';
+import UserSignupPage from './screen/UserSignupPage';
+import Login from './screen/LoginPage';
+import Navbar from './components/Navbar';
+import ApiProgress from './shared/ApiProgress';
+import UserPage from './screen/UserPage';
+import Header from './screen/Header';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component{
+
+  state = {
+    isLoggedIn: false,
+    username: undefined,
+  }
+
+  onLoginSuccess = (username) => {
+    this.setState({
+      username: username,
+      isLoggedIn: true,
+    })
+  }
+
+  onLogoutSuccess = () => {
+    this.setState({
+      username: undefined,
+      isLoggedIn:false,
+    })
+  }
+
+  render(){
+    const {isLoggedIn, username} = this.state;
+
+    return(
+      <Router>
+      <Header username={username} isLoggedIn={isLoggedIn} onLogoutSuccess={this.onLogoutSuccess}/>
+      <div>
+        <Switch>
+        {!isLoggedIn && (<Route exact path="/"
+          component={(props) => {
+          return <Login {...props}
+          onLoginSuccess={this.onLoginSuccess}/>
+        }} />)}
+        <Route exact path="/usersignuppage" component={UserSignupPage} />
+        <Route exact path="/homescreen/:username" component={(props) => {
+          return <Context {...props} username={username}/>
+        }} />
+        <Route exact path="/user/:username" component={(props) => {
+            return <UserPage {...props} username={username} isLoggedIn={isLoggedIn}/>
+        }} />
+        <Redirect to="/homescreen" />
+        </Switch>
+      </div>
+      </Router>
+    );
+  }
 }
+
+
 
 export default App;
